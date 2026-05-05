@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>🎻 ZEZE · Tanzanian Spike Fiddle · Bow with Thin Attachment Threads</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #020108; font-family: 'Segoe UI', system-ui, sans-serif; }
+        #info {
+            position: fixed; bottom: 20px; left: 20px;
+            background: rgba(0,0,0,0.7); backdrop-filter: blur(16px);
+            padding: 10px 20px; border-radius: 28px; font-size: 12px;
+            pointer-events: none; z-index: 20; border-left: 4px solid #f5b642;
+            max-width: 540px; color: #f7eed9;
+        }
+        #info h1 { margin: 0 0 4px; font-size: 0.95rem; letter-spacing: 0.5px; }
+        #info p { margin: 0; font-size: 0.7rem; opacity: 0.9; }
+        .controls-note {
+            position: fixed; top: 20px; right: 20px;
+            background: rgba(10,10,20,0.6); backdrop-filter: blur(8px);
+            padding: 5px 12px; border-radius: 28px; font-size: 11px;
+            font-family: monospace; pointer-events: none; z-index: 20;
+            color: #ddd;
+        }
+        .badge {
+            position: fixed; bottom: 20px; right: 20px;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(8px);
+            padding: 4px 12px; border-radius: 24px; font-size: 9px;
+            font-family: monospace; pointer-events: none; z-index: 20;
+            color: #ccb;
+        }
+        @media (max-width: 700px) {
+            #info { font-size: 10px; padding: 8px 14px; max-width: 300px; }
+            .controls-note, .badge { font-size: 9px; padding: 4px 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div id="info">
+        <h1>🎵 ZEZE · Wagogo Spike Fiddle · Bow with Thin Connecting Threads</h1>
+        <p>🇹🇿 Flag‑pattern bow | Horsehair attached via fine threads | Separate display | High‑gloss finish</p>
+    </div>
+    <div class="controls-note">🖱️ Drag to rotate · Scroll zoom · Auto‑rotate</div>
+    <div class="badge">✨ Bow stick tied to hair with thin threads</div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // Setup scene
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x020214);
+        scene.fog = new THREE.FogExp2(0x020214, 0.012);
+
+        const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.01, 20);
+        camera.position.set(0.85, 0.45, 1.65);
+        camera.lookAt(0, -0.06, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.35;
+        document.body.appendChild(renderer.domElement);
+
+        // Controls
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.07;
+        controls.rotateSpeed = 1.2;
+        controls.zoomSpeed = 1.4;
+        controls.enableZoom = true;
+        controls.enablePan = true;
+        controls.target.set(0, -0.06, 0);
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 0.55;
+        controls.minDistance = 0.07;
+        controls.maxDistance = 6.0;
+
+        let autoTimer;
+        controls.addEventListener('start', () => { controls.autoRotate = false; if (autoTimer) clearTimeout(autoTimer); });
+        controls.addEventListener('end', () => { autoTimer = setTimeout(() => { controls.autoRotate = true; }, 3800); });
+
+        // Dimensions
+        const GOURD_RADIUS = 0.135;
+        const SPIKE_LENGTH = 0.78;
+        const NECK_RADIUS_TOP = 0.011;
+        const NECK_RADIUS_BOTTOM = 0.013;
+        const BRIDGE_HEIGHT = 0.028;
+
+        const spikeTopY = SPIKE_LENGTH / 2;
+        const spikeBottomY = -SPIKE_LENGTH / 2;
+        const gourdCenterY = spikeBottomY + GOURD_RADIUS * 1.25;
+        const gourdTopY = gourdCenterY + GOURD_RADIUS;
+
+        // --- Textures
+        function createEbonyTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 4096; canvas.height = 4096;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#1a0b04'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#2e170c';
+            for (let i = 0; i < 15000; i++) ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 2 + Math.random() * 8, 1 + Math.random() * 5);
+            ctx.strokeStyle = '#4f2a14'; ctx.lineWidth = 10;
+            for (let w = 0; w < 40; w++) {
+                ctx.beginPath();
+                const y0 = 80 + w * 100;
+                ctx.moveTo(0, y0);
+                for (let x = 0; x < canvas.width; x += 40) ctx.lineTo(x, y0 + Math.sin(x * 0.008 + w) * 28);
+                ctx.stroke();
+            }
+            ctx.fillStyle = '#f3c550';
+            for (let d = 0; d < 300; d++) {
+                const x = 60 + Math.random() * (canvas.width - 120);
+                const y = 60 + Math.random() * (canvas.height - 120);
+                ctx.beginPath();
+                ctx.moveTo(x, y - 10);
+                ctx.lineTo(x + 10, y);
+                ctx.lineTo(x, y + 10);
+                ctx.lineTo(x - 10, y);
+                ctx.fill();
+            }
+            ctx.fillStyle = '#1B6B3C'; ctx.fillRect(0, 3200, canvas.width, 100);
+            ctx.fillStyle = '#F3C45A'; ctx.fillRect(0, 3300, canvas.width, 70);
+            ctx.fillStyle = '#1E1E2A'; ctx.fillRect(0, 3370, canvas.width, 80);
+            ctx.fillStyle = '#F3C45A'; ctx.fillRect(0, 3450, canvas.width, 70);
+            ctx.fillStyle = '#0F52BA'; ctx.fillRect(0, 3520, canvas.width, 100);
+            const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            grad.addColorStop(0, 'rgba(255,230,140,0.12)');
+            grad.addColorStop(1, 'rgba(180,100,40,0.04)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.font = "bold 80px 'Segoe UI'";
+            ctx.fillStyle = "#fad67a";
+            ctx.fillText("ZEZE", canvas.width - 450, 320);
+            ctx.font = "42px monospace";
+            ctx.fillStyle = "#dbb45c";
+            ctx.fillText("WAGOGO · TANZANIA", canvas.width - 700, 480);
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
+            tex.repeat.set(2.2, 3.5);
+            return tex;
+        }
+
+        function createFlagGourdTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 8192; canvas.height = 8192;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#bc7a44';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            const speckles = ['#e8c36a', '#e2a528', '#d85a2a', '#2e9a55', '#206a9a', '#f3c55a', '#c44a2a', '#8a5a2a'];
+            for (let i = 0; i < 50000; i++) {
+                ctx.fillStyle = speckles[Math.floor(Math.random() * speckles.length)];
+                ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 5 + Math.random() * 12, 5 + Math.random() * 12);
+            }
+            const width = canvas.width, height = canvas.height;
+            const colors = ['#1B6B3C', '#F3C45A', '#1E1E2A', '#F3C45A', '#0F52BA'];
+            const bandCount = 25;
+            for (let i = 0; i < bandCount; i++) {
+                const offset = i * (width / bandCount);
+                ctx.beginPath();
+                ctx.moveTo(offset, 0);
+                ctx.lineTo(offset + width / bandCount * 0.8, height);
+                ctx.lineTo(offset + width / bandCount * 1.2, height);
+                ctx.lineTo(offset + width / bandCount * 0.4, 0);
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(offset + width / bandCount * 0.38, 0);
+                ctx.lineTo(offset + width / bandCount * 1.18, height);
+                ctx.lineTo(offset + width / bandCount * 1.22, height);
+                ctx.lineTo(offset + width / bandCount * 0.42, 0);
+                ctx.fillStyle = '#f3c55a';
+                ctx.fill();
+            }
+            for (let y = 400; y < height; y += 900) {
+                ctx.fillStyle = '#1B6B3C'; ctx.fillRect(0, y, width, 45);
+                ctx.fillStyle = '#F3C45A'; ctx.fillRect(0, y+45, width, 30);
+                ctx.fillStyle = '#1E1E2A'; ctx.fillRect(0, y+75, width, 40);
+                ctx.fillStyle = '#F3C45A'; ctx.fillRect(0, y+115, width, 30);
+                ctx.fillStyle = '#0F52BA'; ctx.fillRect(0, y+145, width, 45);
+            }
+            const cx = width/2, cy = height/2;
+            for (let r = 600; r < 3800; r += 700) {
+                ctx.beginPath();
+                ctx.arc(cx, cy, r, 0, Math.PI*2);
+                ctx.strokeStyle = '#f3c55a';
+                ctx.lineWidth = 20;
+                ctx.stroke();
+                for (let a = 0; a < Math.PI*2; a += Math.PI/16) {
+                    const x = cx + Math.cos(a) * r;
+                    const y = cy + Math.sin(a) * r;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 35, 0, Math.PI*2);
+                    ctx.fillStyle = '#f3c55a';
+                    ctx.fill();
+                }
+            }
+            for (let s = 0; s < 800; s++) {
+                const sx = 100 + Math.random() * (width - 200);
+                const sy = 100 + Math.random() * (height - 200);
+                ctx.beginPath();
+                for (let i = 0; i < 6; i++) {
+                    const angle = (i / 6) * Math.PI * 2;
+                    const x1 = sx + Math.cos(angle) * 28;
+                    const y1 = sy + Math.sin(angle) * 28;
+                    const x2 = sx + Math.cos(angle + 0.5) * 12;
+                    const y2 = sy + Math.sin(angle + 0.5) * 12;
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                }
+                ctx.fillStyle = '#f3c55a';
+                ctx.fill();
+            }
+            const seq = ['#1B6B3C', '#F3C45A', '#1E1E2A', '#F3C45A', '#0F52BA'];
+            for (let i = 0; i < 5; i++) {
+                ctx.fillStyle = seq[i];
+                ctx.fillRect(150 + i*95, 7900, 85, 45);
+            }
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
+            return tex;
+        }
+
+        function createBowWoodTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 2048; canvas.height = 2048;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#8b5a2b';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            const colors = ['#1B6B3C', '#F3C45A', '#1E1E2A', '#F3C45A', '#0F52BA'];
+            const stripHeight = canvas.height / 8;
+            for (let i = 0; i < 8; i++) {
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.fillRect(0, i * stripHeight, canvas.width, stripHeight);
+            }
+            ctx.strokeStyle = '#4a2a10';
+            ctx.lineWidth = 6;
+            for (let w = 0; w < 60; w++) {
+                ctx.beginPath();
+                const y = 20 + w * 35;
+                ctx.moveTo(0, y);
+                for (let x = 0; x < canvas.width; x += 50) ctx.lineTo(x, y + Math.sin(x * 0.02) * 12);
+                ctx.stroke();
+            }
+            ctx.fillStyle = '#f3c550';
+            for (let d = 0; d < 200; d++) {
+                const x = 40 + Math.random() * (canvas.width - 80);
+                const y = 40 + Math.random() * (canvas.height - 80);
+                ctx.beginPath();
+                ctx.moveTo(x, y - 6);
+                ctx.lineTo(x + 6, y);
+                ctx.lineTo(x, y + 6);
+                ctx.lineTo(x - 6, y);
+                ctx.fill();
+            }
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.wrapS = THREE.RepeatWrapping;
+            tex.wrapT = THREE.RepeatWrapping;
+            tex.repeat.set(1, 1.5);
+            return tex;
+        }
+
+        const ebonyTex = createEbonyTexture();
+        const gourdTex = createFlagGourdTexture();
+        const bowWoodTex = createBowWoodTexture();
+
+        // --- Build main Zeze instrument
+        const spikeMat = new THREE.MeshStandardMaterial({ map: ebonyTex, roughness: 0.22, metalness: 0.45, emissive: 0x221100, emissiveIntensity: 0.04 });
+        const spike = new THREE.Mesh(new THREE.CylinderGeometry(NECK_RADIUS_TOP, NECK_RADIUS_BOTTOM, SPIKE_LENGTH, 128), spikeMat);
+        spike.position.y = 0; spike.castShadow = true; spike.receiveShadow = true;
+        scene.add(spike);
+
+        const gourdMat = new THREE.MeshStandardMaterial({ map: gourdTex, roughness: 0.28, metalness: 0.18, emissive: 0x442200, emissiveIntensity: 0.05 });
+        const gourd = new THREE.Mesh(new THREE.SphereGeometry(GOURD_RADIUS, 256, 256), gourdMat);
+        gourd.position.y = gourdCenterY; gourd.castShadow = true; gourd.receiveShadow = true;
+        scene.add(gourd);
+
+        const skinMat = new THREE.MeshStandardMaterial({ color: 0xf3e3ce, roughness: 0.55, metalness: 0.05, side: THREE.DoubleSide });
+        const skin = new THREE.Mesh(new THREE.CircleGeometry(GOURD_RADIUS * 0.94, 128), skinMat);
+        skin.rotation.x = -Math.PI/2; skin.position.y = gourdTopY - 0.003; skin.receiveShadow = true;
+        scene.add(skin);
+
+        const ringMat = new THREE.MeshStandardMaterial({ color: 0xe6b340, metalness: 0.92, roughness: 0.18 });
+        const ring = new THREE.Mesh(new THREE.TorusGeometry(GOURD_RADIUS * 0.96, 0.0065, 128, 320), ringMat);
+        ring.rotation.x = Math.PI/2; ring.position.y = gourdTopY - 0.006; ring.castShadow = true;
+        scene.add(ring);
+
+        const bridgeMat = new THREE.MeshStandardMaterial({ color: 0xc3823a, roughness: 0.24, metalness: 0.22 });
+        const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.06, BRIDGE_HEIGHT, 0.022), bridgeMat);
+        bridge.position.set(0, gourdTopY + BRIDGE_HEIGHT/2 - 0.002, GOURD_RADIUS * 0.62);
+        bridge.castShadow = true; bridge.receiveShadow = true;
+        scene.add(bridge);
+
+        const pegboxMat = new THREE.MeshStandardMaterial({ map: ebonyTex, roughness: 0.25, metalness: 0.35 });
+        const pegbox = new THREE.Mesh(new THREE.BoxGeometry(0.044, 0.052, 0.074), pegboxMat);
+        pegbox.position.y = spikeTopY - 0.04; pegbox.castShadow = true;
+        scene.add(pegbox);
+
+        const pegMat = new THREE.MeshStandardMaterial({ color: 0xb87a3a, metalness: 0.65, roughness: 0.22 });
+        const goldTipMat = new THREE.MeshStandardMaterial({ color: 0xf3c550, metalness: 0.95, emissive: 0x442200, emissiveIntensity: 0.06 });
+        const pegPos = [{ y: spikeTopY - 0.02, z: -0.036 }, { y: spikeTopY - 0.06, z: -0.036 }, 
+                        { y: spikeTopY - 0.02, z: 0.036 }, { y: spikeTopY - 0.06, z: 0.036 }];
+        pegPos.forEach(p => {
+            const peg = new THREE.Mesh(new THREE.CylinderGeometry(0.0082, 0.0082, 0.062, 24), pegMat);
+            peg.position.set(0, p.y, p.z); peg.rotation.x = 0.35; peg.rotation.z = (p.z < 0) ? 0.28 : -0.28;
+            peg.castShadow = true; scene.add(peg);
+            const tip = new THREE.Mesh(new THREE.SphereGeometry(0.0052, 20, 20), goldTipMat);
+            tip.position.set(0, p.y + (p.z < 0 ? -0.036 : 0.036), p.z + (p.z < 0 ? -0.022 : 0.022));
+            scene.add(tip);
+        });
+
+        const anchorMat = new THREE.MeshStandardMaterial({ color: 0xb87a3a, metalness: 0.55 });
+        const anchor = new THREE.Mesh(new THREE.CylinderGeometry(0.0145, 0.0185, 0.042, 24), anchorMat);
+        anchor.position.set(0, spikeBottomY + 0.062, 0.062); anchor.castShadow = true;
+        scene.add(anchor);
+
+        // Strings on Zeze
+        const stringMat = new THREE.MeshStandardMaterial({ color: 0xf0e8c8, metalness: 0.99, roughness: 0.06, emissive: 0x442200, emissiveIntensity: 0.12 });
+        function addString(xOff, rad=0.0019) {
+            const top = new THREE.Vector3(xOff, spikeTopY - 0.05, 0);
+            const over = new THREE.Vector3(xOff, bridge.position.y + BRIDGE_HEIGHT/2 + 0.0015, bridge.position.z);
+            const bot = new THREE.Vector3(xOff, spikeBottomY + 0.072, 0.042);
+            const curve = new THREE.CatmullRomCurve3([top, over, bot]);
+            const tube = new THREE.TubeGeometry(curve, 80, rad, 12, false);
+            const mesh = new THREE.Mesh(tube, stringMat);
+            mesh.castShadow = true; scene.add(mesh);
+            return mesh;
+        }
+        addString(-0.014, 0.0019); addString(-0.005, 0.0017); addString(0.005, 0.0017); addString(0.014, 0.0019);
+
+        // ========== BOW WITH THIN THREADS CONNECTING STICK TO HAIR ==========
+        const bowGroup = new THREE.Group();
+        
+        // Bow stick curve
+        const stickStart = new THREE.Vector3(0, -0.12, 0);
+        const stickEnd = new THREE.Vector3(0, 0.80, -0.03);
+        const stickControlPoints = [
+            stickStart,
+            new THREE.Vector3(0, 0.08, 0.03),
+            new THREE.Vector3(0, 0.32, 0.045),
+            new THREE.Vector3(0, 0.58, 0.02),
+            stickEnd
+        ];
+        const stickCurve = new THREE.CatmullRomCurve3(stickControlPoints);
+        
+        // Wooden stick
+        const bowStickMat = new THREE.MeshStandardMaterial({ map: bowWoodTex, roughness: 0.35, metalness: 0.25 });
+        const bowStick = new THREE.Mesh(new THREE.TubeGeometry(stickCurve, 100, 0.0095, 24, false), bowStickMat);
+        bowStick.castShadow = true;
+        bowGroup.add(bowStick);
+        
+        // Horsehair (string) – same curve, slightly offset inward
+        const stringOffset = 0.0035;
+        const stringPoints = stickControlPoints.map(p => new THREE.Vector3(p.x + stringOffset, p.y, p.z + 0.0025));
+        const stringCurve = new THREE.CatmullRomCurve3(stringPoints);
+        const stringMatBow = new THREE.MeshStandardMaterial({ color: 0xe8d8b0, roughness: 0.75, metalness: 0.05 });
+        const bowString = new THREE.Mesh(new THREE.TubeGeometry(stringCurve, 90, 0.0042, 12, false), stringMatBow);
+        bowString.castShadow = true;
+        bowGroup.add(bowString);
+        
+        // --- Very thin threads connecting stick to hair at multiple points ---
+        const threadMatThin = new THREE.MeshStandardMaterial({ color: 0xc49a6c, metalness: 0.1, roughness: 0.6 });
+        const connectionPoints = [0, 0.25, 0.5, 0.75, 1.0]; // parameters along the curve
+        
+        connectionPoints.forEach(t => {
+            const pointStick = stickCurve.getPoint(t);
+            const pointHair = stringCurve.getPoint(t);
+            // Create a small cylinder between the two points
+            const start = pointStick;
+            const end = pointHair;
+            const dir = new THREE.Vector3().subVectors(end, start);
+            const length = dir.length();
+            if (length < 0.0001) return;
+            const cylinder = new THREE.Mesh(new THREE.CylinderGeometry(0.0008, 0.0008, length, 4), threadMatThin);
+            cylinder.position.copy(start.clone().add(end).multiplyScalar(0.5));
+            cylinder.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir.clone().normalize());
+            cylinder.castShadow = true;
+            bowGroup.add(cylinder);
+        });
+        
+        // Additional binding wraps at the ends (thicker for visibility)
+        const wrapMat = new THREE.MeshStandardMaterial({ color: 0xf3c550, metalness: 0.4 });
+        const endWrap1 = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.025, 8), wrapMat);
+        endWrap1.position.copy(stickStart);
+        endWrap1.rotation.z = Math.PI/2;
+        bowGroup.add(endWrap1);
+        
+        const endWrap2 = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.025, 8), wrapMat);
+        endWrap2.position.copy(stickEnd);
+        endWrap2.rotation.z = Math.PI/2;
+        bowGroup.add(endWrap2);
+        
+        // Flag-coloured decorative rings along the stick
+        const flagColors = [0x1B6B3C, 0xF3C45A, 0x1E1E2A, 0xF3C45A, 0x0F52BA];
+        for (let i = 0; i < 12; i++) {
+            const t = i / 11;
+            const point = stickCurve.getPoint(t);
+            const wrapColor = flagColors[i % flagColors.length];
+            const ringWrap = new THREE.Mesh(new THREE.TorusGeometry(0.011, 0.003, 12, 24), new THREE.MeshStandardMaterial({ color: wrapColor, metalness: 0.2 }));
+            ringWrap.position.copy(point);
+            ringWrap.rotation.x = Math.PI/2;
+            bowGroup.add(ringWrap);
+        }
+        
+        // Position bow separately, diagonally to the side
+        bowGroup.position.set(0.55, -0.30, 0.48);
+        bowGroup.rotation.z = -0.38;
+        bowGroup.rotation.x = 0.18;
+        bowGroup.rotation.y = 0.48;
+        scene.add(bowGroup);
+
+        // --- Carrying strap (physics) unchanged
+        const strapTop = new THREE.Vector3(0, spikeTopY - 0.03, -0.041);
+        const strapBot = new THREE.Vector3(0, spikeBottomY + 0.055, -0.052);
+        const segCount = 28; const segDist = 0.032;
+        const strapSpheres = [], strapVels = [], strapConns = [];
+        const strapMatLeather = new THREE.MeshStandardMaterial({ color: 0x9a6a3a, roughness: 0.60, metalness: 0.08 });
+        const connMatLeather = new THREE.MeshStandardMaterial({ color: 0xaa7a4a, roughness: 0.65 });
+        for (let i = 0; i <= segCount; i++) {
+            const t = i / segCount;
+            const pos = new THREE.Vector3().lerpVectors(strapTop, strapBot, t);
+            const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.0042, 12, 12), strapMatLeather);
+            sphere.position.copy(pos); sphere.castShadow = true; scene.add(sphere);
+            strapSpheres.push(sphere); strapVels.push(new THREE.Vector3(0,0,0));
+        }
+        for (let i = 0; i < segCount; i++) {
+            const cyl = new THREE.Mesh(new THREE.CylinderGeometry(0.0025, 0.0025, 1, 8), connMatLeather);
+            cyl.castShadow = true; scene.add(cyl); strapConns.push(cyl);
+        }
+        function updateStrap() {
+            const start = strapTop.clone(); const end = strapBot.clone();
+            const grav = new THREE.Vector3(0, -0.00038, 0);
+            for (let i=1; i<segCount; i++) { strapVels[i].add(grav); strapVels[i].multiplyScalar(0.94); strapSpheres[i].position.add(strapVels[i]); }
+            strapSpheres[0].position.copy(start); strapVels[0].set(0,0,0);
+            strapSpheres[segCount].position.copy(end); strapVels[segCount].set(0,0,0);
+            for (let iter=0; iter<10; iter++) {
+                for (let i=0; i<segCount; i++) {
+                    const a = strapSpheres[i], b = strapSpheres[i+1];
+                    const dir = new THREE.Vector3().subVectors(b.position, a.position);
+                    const len = dir.length();
+                    if (len<0.0001) continue;
+                    const corr = (len - segDist)/len;
+                    const half = dir.clone().multiplyScalar(corr * 0.5);
+                    if (i>0) a.position.add(half);
+                    if (i<segCount-1) b.position.sub(half);
+                }
+                strapSpheres[0].position.copy(start); strapSpheres[segCount].position.copy(end);
+            }
+            for (let i=0; i<segCount; i++) {
+                const p1 = strapSpheres[i].position, p2 = strapSpheres[i+1].position;
+                const dir = new THREE.Vector3().subVectors(p2, p1);
+                const len = dir.length();
+                if (len<0.0001) continue;
+                const cyl = strapConns[i];
+                cyl.position.copy(p1.clone().add(p2).multiplyScalar(0.5));
+                const quat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0), dir.normalize());
+                cyl.setRotationFromQuaternion(quat);
+                cyl.scale.set(0.0055, len, 0.0055);
+            }
+        }
+
+        // Finial
+        const finialBaseMat = new THREE.MeshStandardMaterial({ color: 0x6a3a1a, metalness: 0.45, roughness: 0.32 });
+        const finialBase = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.014, 0.032, 24), finialBaseMat);
+        finialBase.position.y = spikeTopY + 0.022; finialBase.castShadow = true;
+        scene.add(finialBase);
+        const finialBallMat = new THREE.MeshStandardMaterial({ color: 0xf3c550, metalness: 0.96, emissive: 0x442200, emissiveIntensity: 0.07 });
+        const finialBall = new THREE.Mesh(new THREE.SphereGeometry(0.0135, 32, 32), finialBallMat);
+        finialBall.position.y = spikeTopY + 0.050; finialBall.castShadow = true;
+        scene.add(finialBall);
+
+        // Ambient particles
+        const dustCount = 8000;
+        const dustGeo = new THREE.BufferGeometry();
+        const dustPos = new Float32Array(dustCount * 3);
+        const dustCol = new Float32Array(dustCount * 3);
+        const flagSeq = [0x1B6B3C, 0xF3C45A, 0x1E1E2A, 0xF3C45A, 0x0F52BA];
+        for (let i=0; i<dustCount; i++) {
+            dustPos[i*3] = (Math.random() - 0.5) * 5.2;
+            dustPos[i*3+1] = Math.random() * 3.2 - 1.4;
+            dustPos[i*3+2] = (Math.random() - 0.5) * 5.8 - 1.0;
+            const fc = flagSeq[Math.floor(Math.random() * flagSeq.length)];
+            dustCol[i*3] = ((fc >> 16) & 255)/255;
+            dustCol[i*3+1] = ((fc >> 8) & 255)/255;
+            dustCol[i*3+2] = (fc & 255)/255;
+        }
+        dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
+        dustGeo.setAttribute('color', new THREE.BufferAttribute(dustCol, 3));
+        const dustMatP = new THREE.PointsMaterial({ size: 0.0035, vertexColors: true, transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending });
+        const dustSys = new THREE.Points(dustGeo, dustMatP);
+        scene.add(dustSys);
+
+        const starCount = 8000;
+        const starGeo = new THREE.BufferGeometry();
+        const starPositions = new Float32Array(starCount * 3);
+        for (let i=0; i<starCount; i++) {
+            starPositions[i*3] = (Math.random() - 0.5) * 260;
+            starPositions[i*3+1] = (Math.random() - 0.5) * 150;
+            starPositions[i*3+2] = (Math.random() - 0.5) * 110 - 55;
+        }
+        starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+        const starMatP = new THREE.PointsMaterial({ color: 0xfff2cf, size: 0.055, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending });
+        const stars = new THREE.Points(starGeo, starMatP);
+        scene.add(stars);
+
+        // Lighting
+        const ambient = new THREE.AmbientLight(0x4a2a18, 0.58);
+        scene.add(ambient);
+        const keyLight = new THREE.DirectionalLight(0xffe6c0, 1.9);
+        keyLight.position.set(2.5, 3.2, 2.4);
+        keyLight.castShadow = true;
+        keyLight.shadow.mapSize.width = 4096; keyLight.shadow.mapSize.height = 4096;
+        scene.add(keyLight);
+        const fillWarm = new THREE.PointLight(0xd48a4a, 0.98);
+        fillWarm.position.set(-1.4, 0.8, -1.6);
+        scene.add(fillWarm);
+        const rimCool = new THREE.PointLight(0x88aaff, 0.85);
+        rimCool.position.set(1.7, 1.1, -2.6);
+        scene.add(rimCool);
+        const rimGold = new THREE.PointLight(0xffbb66, 0.8);
+        rimGold.position.set(0.9, 1.4, -2.2);
+        scene.add(rimGold);
+        const backLight = new THREE.PointLight(0xffcc77, 0.7);
+        backLight.position.set(0, 0.5, -3.4);
+        scene.add(backLight);
+        const underGlow = new THREE.PointLight(0xcc8844, 0.6);
+        underGlow.position.set(0, -0.8, 0.8);
+        scene.add(underGlow);
+        
+        const groundPlaneMat = new THREE.MeshStandardMaterial({ color: 0x1a0d06, roughness: 0.96, metalness: 0.01, transparent: true, opacity: 0.55 });
+        const groundPlane = new THREE.Mesh(new THREE.CircleGeometry(2.1, 48), groundPlaneMat);
+        groundPlane.rotation.x = -Math.PI/2;
+        groundPlane.position.y = spikeBottomY - 0.05;
+        groundPlane.receiveShadow = true;
+        scene.add(groundPlane);
+
+        // Animation
+        let time = 0;
+        function animate() {
+            requestAnimationFrame(animate);
+            time += 0.014;
+            controls.update();
+            updateStrap();
+            
+            const shimmer = 0.12 + Math.sin(time * 7.5) * 0.06;
+            stringMat.emissiveIntensity = shimmer;
+            goldTipMat.emissiveIntensity = 0.09 + Math.sin(time * 5) * 0.04;
+            finialBallMat.emissiveIntensity = 0.08 + Math.sin(time * 4.2) * 0.03;
+
+            dustSys.rotation.y -= 0.0004;
+            stars.rotation.y += 0.00015;
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
